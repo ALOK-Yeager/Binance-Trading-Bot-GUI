@@ -712,6 +712,38 @@ def place_order():
         if order_type == 'LIMIT' and not price:
             return redirect(f'/?notification=Price is required for LIMIT orders&type=error')
         
+        # Get current market price to check for PERCENT_PRICE_BY_SIDE filter
+        if order_type == 'LIMIT' and client:
+            try:
+                # Get current price
+                ticker = client.get_symbol_ticker(symbol=symbol)
+                current_price = float(ticker['price'])
+                
+                # Get price filter info
+                exchange_info = client.get_exchange_info()
+                price_filter = None
+                
+                for sym_info in exchange_info['symbols']:
+                    if sym_info['symbol'] == symbol:
+                        for filter_item in sym_info['filters']:
+                            if filter_item['filterType'] == 'PERCENT_PRICE_BY_SIDE':
+                                price_filter = filter_item
+                                break
+                
+                # Check if price is within allowed range
+                if price_filter and price:
+                    price_float = float(price)
+                    if side == 'BUY':
+                        max_price = current_price * float(price_filter.get('bidMultiplierUp', 1.2))
+                        if price_float > max_price:
+                            return redirect(f'/?notification=Price too high! Maximum allowed: {max_price:.2f}&type=error')
+                    else:  # SELL
+                        min_price = current_price * float(price_filter.get('askMultiplierDown', 0.8))
+                        if price_float < min_price:
+                            return redirect(f'/?notification=Price too low! Minimum allowed: {min_price:.2f}&type=error')
+            except Exception as e:
+                logger.warning(f"Couldn't check price filter: {str(e)}")
+        
         # Prepare order parameters
         params = {
             'symbol': symbol,
@@ -721,10 +753,10 @@ def place_order():
         }
         
         # Add price for LIMIT orders
-        if order_type == 'LIMIT':
+        if order_type == 'LIMIT' and price:
             try:
-                price = float(price)
-                params['price'] = price
+                price_float = float(price)
+                params['price'] = price_float
                 params['timeInForce'] = 'GTC'
             except ValueError:
                 return redirect(f'/?notification=Invalid price&type=error')
