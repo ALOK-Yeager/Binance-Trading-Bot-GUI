@@ -3,3 +3,6 @@ pytest
 pytest-cov
 python-dotenv
 pre-commit
+flask
+customtkinter
+Flask==2.3.3 
