@@ -89,6 +89,39 @@ class BasicBot:
             if order_type == 'LIMIT' and (price is None or price <= 0):
                 raise ValueError("Invalid price for LIMIT order")
 
+            # Check price against PERCENT_PRICE_BY_SIDE filter for LIMIT orders
+            if order_type == 'LIMIT':
+                # Get current market price
+                ticker = self.client.get_symbol_ticker(symbol=symbol)
+                current_price = float(ticker['price'])
+                
+                # Get filter limits for this symbol
+                exchange_info = self.client.get_exchange_info()
+                percent_limits = None
+                for symbol_info in exchange_info['symbols']:
+                    if symbol_info['symbol'] == symbol:
+                        for filter in symbol_info['filters']:
+                            if filter['filterType'] == 'PERCENT_PRICE_BY_SIDE':
+                                percent_limits = filter
+                                break
+                        break
+                
+                # Validate price against filter if present
+                if percent_limits and price is not None:
+                    if side == 'BUY':
+                        max_price = current_price * (1 + float(percent_limits.get('bidMultiplierUp', 0.1)))
+                        if float(price) > max_price:
+                            error_msg = f"Price too high! Maximum allowed: {max_price}"
+                            logging.error(error_msg)
+                            raise ValueError(error_msg)
+                    else:  # SELL
+                        min_price = current_price * (1 - float(percent_limits.get('askMultiplierDown', 0.1)))
+                        if float(price) < min_price:
+                            error_msg = f"Price too low! Minimum allowed: {min_price}"
+                            logging.error(error_msg)
+                            raise ValueError(error_msg)
+                    logging.info(f"Price {price} is within allowed range for {side} order")
+
             # Prepare parameters
             params = {
                 'symbol': symbol,
