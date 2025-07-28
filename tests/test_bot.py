@@ -99,7 +99,7 @@ def test_place_order_api_exception(bot, mock_client):
     mock_response.text = '{"code": -1121, "msg": "Invalid symbol."}'
     
     # The BinanceAPIException is raised with the response object
-    api_exception = BinanceAPIException(response=mock_response)
+    api_exception = BinanceAPIException(response=mock_response, status_code=400, text='{"code": -1121, "msg": "Invalid symbol."}')
     mock_client.futures_create_order.side_effect = api_exception
     
     with pytest.raises(BinanceAPIException) as excinfo:
@@ -125,10 +125,9 @@ def test_handle_api_error(bot, mock_client):
     mock_client.futures_create_order.side_effect = BinanceAPIException(
         response=None,
         status_code=400,
-        text="Invalid symbol",
-        headers=None
+        text="Invalid symbol"
     )
-    
+      
     # Try to place an order, which should raise the exception
     with pytest.raises(BinanceAPIException):
         bot.place_order(

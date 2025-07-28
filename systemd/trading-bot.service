@@ -1,0 +1,17 @@
+[Unit]
+Description=Binance Trading Bot Headless Service
+After=network.target
+
+[Service]
+User=azureuser
+Group=azureuser
+WorkingDirectory=/home/azureuser/TradingBot_Python
+ExecStart=/home/azureuser/TradingBot_Python/venv/bin/python headless_bot.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=trading-bot
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,17 @@
+[Unit]
+Description=Binance Trading Bot Web UI Service
+After=network.target
+
+[Service]
+User=azureuser
+Group=azureuser
+WorkingDirectory=/home/azureuser/TradingBot_Python
+ExecStart=/home/azureuser/TradingBot_Python/venv/bin/python web_ui.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=trading-web-ui
+
+[Install]
+WantedBy=multi-user.target

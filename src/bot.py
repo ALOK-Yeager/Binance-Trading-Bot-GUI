@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 
 class BasicBot:
-    def __init__(self, api_key: str = None, api_secret: str = None, testnet=True):
+    def __init__(self, api_key: str = "", api_secret: str = "", testnet=True):
         logging.basicConfig(
             format="[%(asctime)s] %(levelname)s: %(message)s",
             level=logging.INFO
@@ -179,3 +179,7 @@ class BasicBot:
         return self.place_order(
             original_symbol=symbol,
             symbol=symbol.replace('/', ''),
+            side=side,
+            order_type='MARKET',
+            quantity=quantity
+        )

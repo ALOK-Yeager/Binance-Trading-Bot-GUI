@@ -120,3 +120,47 @@ TradingBot_Python/
 └── README.md              # This file
 ```
 
+## Screenshots
+
+### Web UI Interface
+
+The web interface provides a modern, responsive design accessible from any browser:
+
+#### Dashboard Overview
+![Dashboard Overview](screenshots/dashboard_overview.png)
+*The main dashboard shows the bot status, current market prices with color-coded indicators for price changes, and provides navigation tabs to other sections.*
+
+#### Market Monitoring
+![Market Monitoring](screenshots/market_monitoring.png)
+*Real-time market data with color-coded price changes helps traders quickly identify market trends and opportunities.*
+
+#### Order Placement
+![Order Placement](screenshots/order_placement.png)
+*The order placement interface allows users to easily create market or limit orders with a simple, intuitive form that adapts based on order type.*
+
+#### Order History
+![Order History](screenshots/order_history.png)
+*View your complete order history with detailed information about each transaction, including time, symbol, price, quantity, and status.*
+
+#### Account Balances
+![Account Balances](screenshots/account_balances.png)
+*Monitor your account balances across multiple assets with a clear, easy-to-read table showing both free and locked amounts.*
+
+### Desktop UI Interface
+
+The desktop application provides a feature-rich trading experience:
+
+#### Desktop Dashboard
+![Desktop Dashboard](screenshots/desktop_dashboard.png)
+*The desktop interface offers comprehensive trading tools in a single window with real-time updates and advanced charting.*
+
+#### Price Alerts
+![Price Alerts](screenshots/price_alerts.png)
+*Set and manage price alerts with visual and audio notifications when targets are reached.*
+
+#### Advanced Order Types
+![Advanced Orders](screenshots/advanced_orders.png)
+*Access to advanced order types and trading strategies for sophisticated trading approaches.*
+
+## Directory Structure
+
