@@ -1,4 +1,4 @@
-binance
+python-binance
 pytest
 pytest-cov
 python-dotenv

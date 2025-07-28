@@ -1,13 +1,26 @@
 import logging
 from binance import Client
 from binance.exceptions import BinanceAPIException
+import os
+from dotenv import load_dotenv
 
 class BasicBot:
-    def __init__(self, api_key: str, api_secret: str, testnet=True):
+    def __init__(self, api_key: str = None, api_secret: str = None, testnet=True):
         logging.basicConfig(
             format="[%(asctime)s] %(levelname)s: %(message)s",
             level=logging.INFO
         )
+        
+        # If API keys not provided, load from environment
+        if api_key is None or api_secret is None:
+            load_dotenv()
+            api_key = os.getenv("BINANCE_API_KEY", "")
+            api_secret = os.getenv("BINANCE_API_SECRET", "")
+        
+        if not api_key or not api_secret:
+            logging.error("API key or secret is missing")
+            raise ValueError("API key or secret is missing")
+            
         self.client = Client(
             api_key=api_key,
             api_secret=api_secret,
@@ -94,7 +107,6 @@ class BasicBot:
 
             # Execute order
             response = self.client.futures_create_order(**params)
-            logging.info(f"Order filled successfully: order_id={response['orderId']}")
             return response
 
         except BinanceAPIException as e:
@@ -130,11 +142,40 @@ class BasicBot:
         except Exception:
             print("\nOrder placement failed. Check logs for details.")
 
-# Example usage:
-if __name__ == "__main__":
-    # Replace with your Testnet API credentials
-    API_KEY = "YOUR_TESTNET_API_KEY"
-    API_SECRET = "YOUR_TESTNET_API_SECRET"
-    
-    bot = BasicBot(API_KEY, API_SECRET)
-    bot.run()
+    def get_account_balance(self, asset=None):
+        """Get account balance for a specific asset or all assets"""
+        try:
+            account = self.client.get_account()
+            
+            if asset:
+                for balance in account['balances']:
+                    if balance['asset'] == asset:
+                        return {
+                            'asset': balance['asset'],
+                            'free': float(balance['free']),
+                            'locked': float(balance['locked'])
+                        }
+                return None
+            else:
+                balances = []
+                for balance in account['balances']:
+                    if float(balance['free']) > 0 or float(balance['locked']) > 0:
+                        balances.append({
+                            'asset': balance['asset'],
+                            'free': float(balance['free']),
+                            'locked': float(balance['locked'])
+                        })
+                return balances
+        
+        except BinanceAPIException as e:
+            logging.error(f"Binance API Error: {e.message} (Code: {e.status_code})")
+            raise
+        except Exception as e:
+            logging.error(f"Unexpected error: {str(e)}")
+            raise
+
+    def place_market_order(self, symbol, side, quantity):
+        """Place a market order"""
+        return self.place_order(
+            original_symbol=symbol,
+            symbol=symbol.replace('/', ''),

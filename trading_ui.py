@@ -30,7 +30,7 @@ class TradingBotUI:
         # Load API credentials
         load_dotenv()
         self.api_key = os.getenv('BINANCE_API_KEY')
-        self.api_secret = os.getenv('BINANCE_SECRET_KEY')
+        self.api_secret = os.getenv('BINANCE_API_SECRET')
         self.client = Client(self.api_key, self.api_secret, testnet=True)
         
         # Initialize state variables

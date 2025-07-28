@@ -13,7 +13,7 @@ def test_trading_operations():
     load_dotenv()
     
     api_key = os.getenv('BINANCE_API_KEY')
-    api_secret = os.getenv('BINANCE_SECRET_KEY')
+    api_secret = os.getenv('BINANCE_API_SECRET')
     
     if not api_key or not api_secret:
         logger.error("API credentials not found in .env file")
