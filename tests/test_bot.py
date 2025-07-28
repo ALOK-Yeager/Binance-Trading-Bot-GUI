@@ -121,11 +121,16 @@ def test_init_with_testnet():
 
 def test_handle_api_error(bot, mock_client):
     """Test handling of API errors."""
+    # Create a mock response object
+    mock_response = MagicMock()
+    mock_response.text = "Invalid symbol"
+    mock_response.status_code = 400
+    
     # Set up the mock to raise an exception
     mock_client.futures_create_order.side_effect = BinanceAPIException(
-        response=None,
+        response=mock_response,
         status_code=400,
-        text="Invalid symbol"
+        text='{"code":-1000,"msg":"Invalid symbol"}'
     )
       
     # Try to place an order, which should raise the exception
