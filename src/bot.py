@@ -1,0 +1,140 @@
+import logging
+from binance import Client
+from binance.exceptions import BinanceAPIException
+
+class BasicBot:
+    def __init__(self, api_key: str, api_secret: str, testnet=True):
+        logging.basicConfig(
+            format="[%(asctime)s] %(levelname)s: %(message)s",
+            level=logging.INFO
+        )
+        self.client = Client(
+            api_key=api_key,
+            api_secret=api_secret,
+            testnet=testnet
+        )
+        # Explicitly set testnet URL for futures endpoints
+        self.client.FUTURES_URL = 'https://testnet.binancefuture.com'
+
+    def validate_user_input(self):
+        # Symbol input with format conversion
+        while True:
+            original_symbol = input("Enter symbol (e.g., BTC/USDT): ").strip()
+            symbol = original_symbol.replace('/', '').upper()
+            if not symbol:
+                print("Symbol cannot be empty")
+                continue
+            break
+
+        # Side validation
+        while True:
+            side = input("Enter side (BUY/SELL): ").upper()
+            if side in ['BUY', 'SELL']:
+                break
+            print("Invalid side. Must be BUY or SELL")
+
+        # Order type validation
+        while True:
+            order_type = input("Enter order type (MARKET/LIMIT): ").upper()
+            if order_type in ['MARKET', 'LIMIT']:
+                break
+            print("Invalid order type. Must be MARKET or LIMIT")
+
+        # Quantity validation
+        while True:
+            try:
+                quantity = float(input("Enter quantity: "))
+                if quantity > 0:
+                    break
+                print("Quantity must be greater than 0")
+            except ValueError:
+                print("Invalid quantity. Must be a number")
+
+        # Price validation for LIMIT orders
+        price = None
+        if order_type == 'LIMIT':
+            while True:
+                try:
+                    price = float(input("Enter price: "))
+                    if price > 0:
+                        break
+                    print("Price must be greater than 0")
+                except ValueError:
+                    print("Invalid price. Must be a number")
+
+        return original_symbol, symbol, side, order_type, quantity, price
+
+    def place_order(self, original_symbol, symbol, side, order_type, quantity, price=None):
+        try:
+            # Input validation
+            if side not in ['BUY', 'SELL']:
+                raise ValueError("Invalid side")
+            if order_type not in ['MARKET', 'LIMIT']:
+                raise ValueError("Invalid order type")
+            if quantity <= 0:
+                raise ValueError("Invalid quantity")
+            if order_type == 'LIMIT' and (price is None or price <= 0):
+                raise ValueError("Invalid price for LIMIT order")
+
+            # Prepare parameters
+            params = {
+                'symbol': symbol,
+                'side': side,
+                'type': order_type,
+                'quantity': quantity,
+            }
+            
+            if order_type == 'LIMIT':
+                params['price'] = price
+                params['timeInForce'] = 'GTC'  # Required for LIMIT orders
+
+            # Log order placement
+            price_display = f"@ {price}" if price else "MARKET"
+            logging.info(f"Placing {order_type} order for {original_symbol} ({side}, qty={quantity} {price_display})")
+
+            # Execute order
+            response = self.client.futures_create_order(**params)
+            logging.info(f"Order filled successfully: order_id={response['orderId']}")
+            return response
+
+        except BinanceAPIException as e:
+            error_msg = f"Binance API Error: {e.message} (Code: {e.status_code})"
+            logging.error(error_msg)
+            raise
+        except ValueError as ve:
+            error_msg = f"Validation Error: {ve}"
+            logging.error(error_msg)
+            raise
+        except Exception as e:
+            error_msg = f"Unexpected error: {str(e)}"
+            logging.error(error_msg)
+            raise
+
+    def run(self):
+        try:
+            # Get and validate user input
+            original_symbol, symbol, side, order_type, quantity, price = self.validate_user_input()
+            
+            # Place order and show results
+            response = self.place_order(original_symbol, symbol, side, order_type, quantity, price)
+            print("\nOrder Details:")
+            print(f"Symbol: {original_symbol}")
+            print(f"Side: {side}")
+            print(f"Type: {order_type}")
+            print(f"Quantity: {quantity}")
+            if price:
+                print(f"Price: {price}")
+            print(f"Order ID: {response['orderId']}")
+            print(f"Status: {response['status']}")
+
+        except Exception:
+            print("\nOrder placement failed. Check logs for details.")
+
+# Example usage:
+if __name__ == "__main__":
+    # Replace with your Testnet API credentials
+    API_KEY = "YOUR_TESTNET_API_KEY"
+    API_SECRET = "YOUR_TESTNET_API_SECRET"
+    
+    bot = BasicBot(API_KEY, API_SECRET)
+    bot.run()

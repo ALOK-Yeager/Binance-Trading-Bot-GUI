@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude AI Chat</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 0;
+            box-shadow: none;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            border: none;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            padding: 20px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='7' cy='7' r='7'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+            opacity: 0.3;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            gap: 20px;
+        }
+
+        .header-left {
+            flex: 1;
+            text-align: left;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 1;
+            margin: 0;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .model-selector {
+            position: relative;
+        }
+
+        .model-dropdown {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 8px 16px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 16 16'%3e%3cpath d='m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 12px;
+            padding-right: 32px;
+        }
+
+        .resource-toggle-icon {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .resource-toggle-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .model-dropdown option {
+            background: #374151;
+            color: white;
+            padding: 8px;
+        }
+
+        .model-dropdown:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .model-dropdown:focus {
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+
+        .chat-content {
+            padding: 20px 30px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-container {
+            position: relative;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        #prompt-input {
+            flex: 1;
+            padding: 16px 20px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            outline: none;
+            background: white;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        #prompt-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            transform: translateY(-1px);
+        }
+
+        #submit-btn {
+            padding: 16px 24px;
+            font-size: 16px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        #submit-btn:active {
+            transform: translateY(0);
+        }
+
+        #submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .output-section {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid #e2e8f0;
+            position: relative;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .output-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .bot-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .output-title {
+            font-weight: 600;
+            color: #374151;
+            font-size: 1.1rem;
+        }
+
+        #output {
+            background: transparent;
+            color: #374151;
+            font-size: 16px;
+            line-height: 1.7;
+            min-height: 60px;
+            font-family: inherit;
+        }
+
+        /* Markdown-style formatting */
+        #output h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 24px 0 16px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        #output h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #374151;
+            margin: 20px 0 12px 0;
+            padding-left: 12px;
+            border-left: 4px solid #6366f1;
+        }
+
+        #output h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin: 16px 0 8px 0;
+        }
+
+        #output p {
+            margin: 12px 0;
+            line-height: 1.7;
+        }
+
+        #output strong {
+            font-weight: 600;
+            color: #1f2937;
+            background: rgba(99, 102, 241, 0.1);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        #output em {
+            font-style: italic;
+            color: #6366f1;
+        }
+
+        #output ul,
+        #output ol {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+
+        #output li {
+            margin: 6px 0;
+            line-height: 1.6;
+        }
+
+        #output ul li::marker {
+            color: #6366f1;
+        }
+
+        #output ol li::marker {
+            color: #6366f1;
+            font-weight: 600;
+        }
+
+        /* Enhanced code blocks with copy functionality */
+        #output pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 16px 0;
+            overflow-x: auto;
+            border: 1px solid #334155;
+            position: relative;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+        }
+
+        #output pre::before {
+            content: attr(data-lang);
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        #output pre .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e2e8f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        #output pre .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        #output code {
+            background: #f1f5f9;
+            color: #e11d48;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9em;
+            border: 1px solid #e2e8f0;
+        }
+
+        #output pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+        }
+
+        /* Enhanced diagram support */
+        .diagram-container {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            text-align: center;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .diagram-container::before {
+            content: 'Diagram';
+            position: absolute;
+            top: 8px;
+            left: 12px;
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        /* Mermaid diagram styling */
+        .mermaid {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        /* ASCII art preservation */
+        .ascii-art {
+            font-family: 'Courier New', monospace;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            white-space: pre;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.2;
+        }
+
+        /* Enhanced table styling */
+        #output table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            font-size: 0.95em;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #output th,
+        #output td {
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            text-align: left;
+        }
+
+        #output th {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            font-weight: 600;
+        }
+
+        #output tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        #output tr:hover {
+            background: #f3f4f6;
+        }
+
+        /* Enhanced alerts/callouts */
+        .alert {
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .alert-info {
+            background: #eff6ff;
+            border-left-color: #3b82f6;
+            color: #1e40af;
+        }
+
+        .alert-warning {
+            background: #fffbeb;
+            border-left-color: #f59e0b;
+            color: #92400e;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+            color: #b91c1c;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            border-left-color: #22c55e;
+            color: #166534;
+        }
+
+        .alert-icon {
+            font-size: 18px;
+            margin-top: 1px;
+        }
+
+        /* Enhanced lists with better spacing */
+        #output ul,
+        #output ol {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+
+        #output li {
+            margin: 8px 0;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        #output ul li::marker {
+            color: #6366f1;
+        }
+
+        #output ol li::marker {
+            color: #6366f1;
+            font-weight: 600;
+        }
+
+        /* Nested lists */
+        #output ul ul,
+        #output ol ol,
+        #output ul ol,
+        #output ol ul {
+            margin: 6px 0;
+        }
+
+        /* Enhanced task lists */
+        .task-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .task-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin: 8px 0;
+        }
+
+        .task-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .task-checkbox.checked {
+            background: #6366f1;
+            border-color: #6366f1;
+            position: relative;
+        }
+
+        .task-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            top: -2px;
+            left: 2px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* LaTeX/Math formulas */
+        .math-formula {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+            font-size: 1.1em;
+            color: #1f2937;
+        }
+
+        .inline-math {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Times New Roman', serif;
+            color: #1f2937;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Blockquotes */
+        #output blockquote {
+            border-left: 4px solid #6366f1;
+            padding: 12px 16px;
+            margin: 16px 0;
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: #4b5563;
+        }
+
+        /* Tables */
+        #output table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            font-size: 0.95em;
+        }
+
+        #output th,
+        #output td {
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            text-align: left;
+        }
+
+        #output th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        #output tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        /* Links */
+        #output a {
+            color: #6366f1;
+            text-decoration: underline;
+            text-decoration-color: rgba(99, 102, 241, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        #output a:hover {
+            text-decoration-color: #6366f1;
+            background: rgba(99, 102, 241, 0.1);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        /* Horizontal rules */
+        #output hr {
+            border: none;
+            height: 2px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            margin: 24px 0;
+            border-radius: 1px;
+        }
+
+        .loading-dots {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background: #6366f1;
+            border-radius: 50%;
+            animation: loading 1.4s ease-in-out infinite both;
+        }
+
+        .loading-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes loading {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        .example-prompts {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .example-prompt {
+            background: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        /* Resource Panel Styles */
+        .resource-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .resource-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .resource-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 380px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            transition: right 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .resource-panel.open {
+            right: 0;
+        }
+
+        .resource-panel-header {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .resource-panel-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .resource-panel-header p {
+            margin: 8px 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .resource-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .resource-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .resource-content {
+            padding: 20px;
+        }
+
+        .resource-category {
+            margin-bottom: 30px;
+        }
+
+        .resource-category h4 {
+            color: #374151;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .resource-links {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .resource-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #374151;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .resource-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #6366f1;
+        }
+
+        .resource-link-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .resource-link-content {
+            flex: 1;
+        }
+
+        .resource-link-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .resource-link-desc {
+            font-size: 0.8rem;
+            color: #6b7280;
+            line-height: 1.3;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                border-radius: 0;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .chat-content {
+                padding: 15px 20px;
+            }
+
+            .input-container {
+                flex-direction: column;
+            }
+
+            #submit-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .example-prompts {
+                justify-content: center;
+            }
+
+            .model-dropdown {
+                font-size: 13px;
+                padding: 6px 12px;
+            }
+
+            .resource-panel {
+                width: 100vw;
+                right: -100vw;
+            }
+
+            .resource-toggle {
+                top: 15px;
+                right: 15px;
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.6rem;
+            }
+
+            .header p {
+                font-size: 0.85rem;
+            }
+
+            .chat-content {
+                padding: 12px 15px;
+            }
+
+            .output-section {
+                padding: 20px;
+            }
+
+            .example-prompts {
+                gap: 8px;
+            }
+
+            .example-prompt {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1><i class="fas fa-robot"></i> Serverless AI Chat</h1>
+                    <p>Powered by Puter.js - No API keys required</p>
+                </div>
+                <div class="header-controls">
+                    <div class="model-selector">
+                        <select id="model-dropdown" class="model-dropdown">
+                            <option value="claude-3-5-sonnet" selected>Claude 3.5 Sonnet</option>
+                            <option value="gpt-4o">GPT-4o</option>
+                            <option value="gpt-4o-mini">GPT-4o Mini</option>
+                            <option value="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo">Llama 3.1 70B</option>
+                        </select>
+                    </div>
+                    <button class="resource-toggle-icon" onclick="toggleResourcePanel()">
+                        <i class="fas fa-tools"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-content">
+            <div class="input-section">
+                <div class="input-container">
+                    <input type="text" id="prompt-input"
+                        placeholder="Ask me anything... (e.g., Explain quantum computing, write a poem, solve a problem)">
+                    <button id="submit-btn">
+                        <span class="btn-text">
+                            <i class="fas fa-paper-plane"></i>
+                            Send
+                        </span>
+                        <div class="spinner"></div>
+                    </button>
+                </div>
+
+                <div class="example-prompts">
+                    <div class="example-prompt" onclick="setPrompt('Explain quantum computing in simple terms')">
+                        <i class="fas fa-atom"></i> Quantum Computing
+                    </div>
+                    <div class="example-prompt" onclick="setPrompt('Write a creative story about space exploration')">
+                        <i class="fas fa-rocket"></i> Creative Writing
+                    </div>
+                    <div class="example-prompt" onclick="setPrompt('Help me debug this JavaScript code')">
+                        <i class="fas fa-code"></i> Code Help
+                    </div>
+                    <div class="example-prompt" onclick="setPrompt('Plan a 7-day trip to Japan')">
+                        <i class="fas fa-map-marked-alt"></i> Travel Planning
+                    </div>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <div class="output-header">
+                    <div class="bot-avatar">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="output-title" id="output-title">AI Assistant</div>
+                </div>
+                <div id="output">
+                    <div style="color: #6b7280; font-style: italic;">
+                        👋 Hello! I'm your AI assistant. Ask me anything and I'll do my best to help you. You
+                        can use the example prompts above to get started, or type your own question.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Toggle Button -->
+    <button class="resource-toggle" onclick="toggleResourcePanel()">
+        <i class="fas fa-tools"></i>
+    </button>
+
+    <!-- Resource Panel -->
+    <div class="resource-panel" id="resourcePanel">
+        <div class="resource-panel-header">
+            <button class="resource-close" onclick="toggleResourcePanel()">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3><i class="fas fa-magic"></i> AI Resources Hub</h3>
+            <p>Discover the best AI tools and resources on the web</p>
+        </div>
+
+        <div class="resource-content">
+            <!-- AI Chat & Assistants -->
+            <div class="resource-category">
+                <h4><i class="fas fa-comments"></i> AI Chat & Assistants</h4>
+                <div class="resource-links">
+                    <a href="https://chat.openai.com" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fab fa-openai"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">ChatGPT</div>
+                            <div class="resource-link-desc">OpenAI's flagship conversational AI</div>
+                        </div>
+                    </a>
+
+                    <a href="https://claude.ai" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">Claude</div>
+                            <div class="resource-link-desc">Anthropic's helpful, harmless AI assistant</div>
+                        </div>
+                    </a>
+
+                    <a href="https://gemini.google.com" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fab fa-google"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">Google Gemini</div>
+                            <div class="resource-link-desc">Google's advanced AI assistant</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Image Generation -->
+            <div class="resource-category">
+                <h4><i class="fas fa-image"></i> AI Image Generation</h4>
+                <div class="resource-links">
+                    <a href="https://www.midjourney.com" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">Midjourney</div>
+                            <div class="resource-link-desc">Premium AI art generation platform</div>
+                        </div>
+                    </a>
+
+                    <a href="https://openai.com/dall-e-3" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">DALL-E 3</div>
+                            <div class="resource-link-desc">OpenAI's advanced image generation</div>
+                        </div>
+                    </a>
+
+                    <a href="https://stability.ai/stable-diffusion" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">Stable Diffusion</div>
+                            <div class="resource-link-desc">Open-source image generation model</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Code & Development -->
+            <div class="resource-category">
+                <h4><i class="fas fa-code"></i> AI Code Assistants</h4>
+                <div class="resource-links">
+                    <a href="https://github.com/features/copilot" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fab fa-github"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">GitHub Copilot</div>
+                            <div class="resource-link-desc">AI pair programmer for coding</div>
+                        </div>
+                    </a>
+
+                    <a href="https://cursor.sh" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fas fa-terminal"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">Cursor</div>
+                            <div class="resource-link-desc">AI-powered code editor</div>
+                        </div>
+                    </a>
+
+                    <a href="https://codeium.com" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">Codeium</div>
+                            <div class="resource-link-desc">Free AI coding assistant</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Productivity Tools -->
+            <div class="resource-category">
+                <h4><i class="fas fa-briefcase"></i> AI Productivity</h4>
+                <div class="resource-links">
+                    <a href="https://notion.so/product/ai" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">Notion AI</div>
+                            <div class="resource-link-desc">AI-powered workspace and notes</div>
+                        </div>
+                    </a>
+
+                    <a href="https://www.grammarly.com" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fas fa-spell-check"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">Grammarly</div>
+                            <div class="resource-link-desc">AI writing assistant and grammar checker</div>
+                        </div>
+                    </a>
+
+                    <a href="https://jasper.ai" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fas fa-pen-fancy"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">Jasper AI</div>
+                            <div class="resource-link-desc">AI content creation platform</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Learning Resources -->
+            <div class="resource-category">
+                <h4><i class="fas fa-graduation-cap"></i> Learn AI</h4>
+                <div class="resource-links">
+                    <a href="https://www.deeplearning.ai" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">DeepLearning.AI</div>
+                            <div class="resource-link-desc">Andrew Ng's AI courses and resources</div>
+                        </div>
+                    </a>
+
+                    <a href="https://huggingface.co" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">Hugging Face</div>
+                            <div class="resource-link-desc">AI model hub and community</div>
+                        </div>
+                    </a>
+
+                    <a href="https://paperswithcode.com" target="_blank" class="resource-link">
+                        <div class="resource-link-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="resource-link-content">
+                            <div class="resource-link-title">Papers with Code</div>
+                            <div class="resource-link-desc">Latest AI research papers and code</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script>
+        const promptInput = document.getElementById('prompt-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const outputDiv = document.getElementById('output');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const spinner = submitBtn.querySelector('.spinner');
+        const modelDropdown = document.getElementById('model-dropdown');
+        const outputTitle = document.getElementById('output-title');
+
+        // Initialize Mermaid for diagram rendering
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            fontFamily: 'Inter, sans-serif'
+        });
+
+        // Model configurations
+        const modelConfigs = {
+            'claude-3-5-sonnet': { name: 'Claude 3.5 Sonnet', icon: 'fas fa-brain' },
+            'gpt-4o': { name: 'GPT-4o', icon: 'fab fa-openai' },
+            'gpt-4o-mini': { name: 'GPT-4o Mini', icon: 'fas fa-rocket' },
+            'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo': { name: 'Llama 3.1 70B', icon: 'fas fa-dragon' }
+        };
+
+        // Update output title based on selected model
+        function updateOutputTitle() {
+            const selectedModel = modelDropdown.value;
+            const config = modelConfigs[selectedModel];
+            if (config) {
+                outputTitle.innerHTML = `<i class="${config.icon}"></i> ${config.name}`;
+            }
+        }
+
+        // Function to set prompt from example buttons
+        function setPrompt(prompt) {
+            promptInput.value = prompt;
+            promptInput.focus();
+        }
+
+        // Function to show loading state
+        function showLoading() {
+            btnText.style.display = 'none';
+            spinner.style.display = 'block';
+            submitBtn.disabled = true;
+
+            const selectedModel = modelDropdown.value;
+            const modelName = modelConfigs[selectedModel]?.name || 'AI';
+
+            // Show typing animation
+            outputDiv.innerHTML = `
+                <div class="loading-dots">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+                <span style="margin-left: 10px; color: #6b7280;">${modelName} is thinking...</span>
+            `;
+        }
+
+        // Function to hide loading state
+        function hideLoading() {
+            btnText.style.display = 'flex';
+            spinner.style.display = 'none';
+            submitBtn.disabled = false;
+        }
+
+        // Enhanced function to format markdown-like text with better diagram support
+        function formatResponse(text) {
+            // Handle Mermaid diagrams first
+            text = text.replace(/```mermaid\n([\s\S]*?)```/g, (match, diagram) => {
+                const diagramId = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                setTimeout(() => {
+                    try {
+                        mermaid.render(diagramId, diagram.trim(), (svgCode) => {
+                            const element = document.getElementById(diagramId);
+                            if (element) {
+                                element.innerHTML = svgCode;
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                    }
+                }, 100);
+                return `<div class="diagram-container"><div id="${diagramId}">Loading diagram...</div></div>`;
+            });
+
+            // Handle ASCII art and diagrams
+            text = text.replace(/```(ascii|diagram|art)\n([\s\S]*?)```/g, (match, type, content) => {
+                return `<div class="ascii-art">${content.trim()}</div>`;
+            });
+
+            // Convert markdown to HTML
+            let formatted = text
+                // Headers
+                .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+
+                // Bold text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/__(.*?)__/g, '<strong>$1</strong>')
+
+                // Italic text
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/_(.*?)_/g, '<em>$1</em>')
+
+                // Strikethrough
+                .replace(/~~(.*?)~~/g, '<del>$1</del>')
+
+                // Inline code (avoid matching already processed code blocks)
+                .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+
+                // Enhanced code blocks with copy functionality and better language detection
+                .replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+                    const language = lang || 'text';
+                    const copyId = 'copy-' + Math.random().toString(36).substr(2, 9);
+                    return `<pre data-lang="${language}"><button class="copy-btn" onclick="copyCode('${copyId}')">Copy</button><code id="${copyId}">${code.trim()}</code></pre>`;
+                })
+
+                // LaTeX formulas (block)
+                .replace(/\$\$([\s\S]*?)\$\$/g, '<div class="math-formula">$1</div>')
+
+                // LaTeX formulas (inline)
+                .replace(/\$([^$\n]+)\$/g, '<span class="inline-math">$1</span>')
+
+                // Enhanced links
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+
+                // Blockquotes with better handling
+                .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
+                .replace(/(<blockquote>.*<\/blockquote>\n?)+/g, (match) => {
+                    return match.replace(/<\/blockquote>\n?<blockquote>/g, '<br>');
+                })
+
+                // Horizontal rules
+                .replace(/^---+$/gm, '<hr>')
+                .replace(/^___+$/gm, '<hr>')
+                .replace(/^\*\*\*+$/gm, '<hr>')
+
+                // Task lists
+                .replace(/^\s*- \[([ x])\] (.*$)/gm, (match, checked, text) => {
+                    const isChecked = checked === 'x' ? 'checked' : '';
+                    return `<li class="task-list-item"><span class="task-checkbox ${isChecked}"></span>${text}</li>`;
+                })
+
+                // Regular unordered lists
+                .replace(/^[\s]*[-*+] (.*$)/gm, '<li>$1</li>')
+
+                // Ordered lists
+                .replace(/^\s*\d+\. (.*$)/gm, '<li>$1</li>')
+
+                // Wrap consecutive list items
+                .replace(/(<li>.*<\/li>\s*)+/g, (match) => {
+                    if (match.includes('task-list-item')) {
+                        return `<ul class="task-list">${match}</ul>`;
+                    }
+                    return `<ul>${match}</ul>`;
+                })
+
+                // Tables
+                .replace(/^\|(.+)\|\s*\n\|[-\s|:]+\|\s*\n((?:\|.*\|\s*\n?)*)/gm, (match, header, rows) => {
+                    const headerCells = header.split('|').map(cell => `<th>${cell.trim()}</th>`).join('');
+                    const bodyRows = rows.trim().split('\n').map(row => {
+                        const cells = row.split('|').slice(1, -1).map(cell => `<td>${cell.trim()}</td>`).join('');
+                        return `<tr>${cells}</tr>`;
+                    }).join('');
+                    return `<table><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table>`;
+                })
+
+                // Alerts/callouts
+                .replace(/^!!! (info|warning|error|success) (.*$)/gm, (match, type, title) => {
+                    const icons = {
+                        info: 'fas fa-info-circle',
+                        warning: 'fas fa-exclamation-triangle',
+                        error: 'fas fa-times-circle',
+                        success: 'fas fa-check-circle'
+                    };
+                    return `<div class="alert alert-${type}"><i class="alert-icon ${icons[type]}"></i><div><strong>${title}</strong></div></div>`;
+                });
+
+            // Split into paragraphs and wrap appropriately
+            const paragraphs = formatted.split(/\n\s*\n/);
+            formatted = paragraphs.map(paragraph => {
+                paragraph = paragraph.trim();
+                if (paragraph &&
+                    !paragraph.startsWith('<h') &&
+                    !paragraph.startsWith('<ul') &&
+                    !paragraph.startsWith('<ol') &&
+                    !paragraph.startsWith('<pre') &&
+                    !paragraph.startsWith('<blockquote') &&
+                    !paragraph.startsWith('<hr') &&
+                    !paragraph.startsWith('<div class="math-formula"') &&
+                    !paragraph.startsWith('<div class="diagram-container"') &&
+                    !paragraph.startsWith('<div class="ascii-art"') &&
+                    !paragraph.startsWith('<table') &&
+                    !paragraph.startsWith('<div class="alert"')) {
+                    return `<p>${paragraph}</p>`;
+                }
+                return paragraph;
+            }).join('\n\n');
+
+            return formatted;
+        }
+
+        // Function to copy code to clipboard
+        function copyCode(elementId) {
+            const codeElement = document.getElementById(elementId);
+            if (codeElement) {
+                navigator.clipboard.writeText(codeElement.textContent).then(() => {
+                    // Show temporary feedback
+                    const copyBtn = codeElement.parentElement.querySelector('.copy-btn');
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                    }, 2000);
+                });
+            }
+        }
+
+        // Enhanced function to display formatted text
+        function typeFormattedText(text, element) {
+            const formattedText = formatResponse(text);
+            element.innerHTML = '';
+
+            // Show formatted text with fade-in animation
+            element.innerHTML = formattedText;
+
+            // Render any mermaid diagrams
+            setTimeout(() => {
+                mermaid.run();
+            }, 200);
+
+            // Add fade-in animation
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(10px)';
+
+            setTimeout(() => {
+                element.style.transition = 'all 0.5s ease';
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+            }, 100);
+        }
+
+        // Submit function with model selection and robust error handling
+        submitBtn.addEventListener('click', async () => {
+            const prompt = promptInput.value.trim();
+            if (!prompt) {
+                outputDiv.innerHTML = '<div style="color: #ef4444; font-style: italic;">⚠️ Please enter a prompt!</div>';
+                return;
+            }
+
+            const selectedModel = modelDropdown.value;
+            showLoading();
+
+            try {
+                // Check if we should use streaming (for Llama model)
+                if (selectedModel.includes('llama')) {
+                    await handleStreamingResponse(prompt, selectedModel);
+                } else {
+                    // Regular non-streaming response
+                    const response = await puter.ai.chat(prompt, { model: selectedModel });
+                    hideLoading();
+
+                    // Handle different response formats
+                    if (response && response.message && response.message.content && response.message.content[0]) {
+                        typeFormattedText(response.message.content[0].text, outputDiv);
+                    } else if (typeof response === 'string') {
+                        typeFormattedText(response, outputDiv);
+                    } else if (response && response.text) {
+                        typeFormattedText(response.text, outputDiv);
+                    } else {
+                        // Fallback for any other response structure
+                        const responseText = JSON.stringify(response, null, 2);
+                        typeFormattedText(responseText, outputDiv);
+                    }
+                }
+
+                // Clear the input after successful response
+                promptInput.value = '';
+            } catch (error) {
+                hideLoading();
+                console.error('API Error:', error);
+
+                let errorMessage = `<h3>Error with ${modelConfigs[selectedModel]?.name || selectedModel}</h3>`;
+                errorMessage += `<p>${error.message || 'Unknown error occurred'}</p>`;
+                errorMessage += '<p>Try selecting a different model from the dropdown.</p>';
+
+                outputDiv.innerHTML = `<div style="color: #ef4444;">${errorMessage}</div>`;
+            }
+        });
+
+        // Handle streaming responses (primarily for Llama)
+        async function handleStreamingResponse(prompt, model) {
+            try {
+                const streamResponse = await puter.ai.chat(prompt, {
+                    model: model,
+                    stream: true
+                });
+
+                // Clear output area first
+                outputDiv.innerHTML = '';
+
+                // Process each chunk as it arrives
+                let fullResponse = '';
+                for await (const part of streamResponse) {
+                    if (part && part.text) {
+                        fullResponse += part.text;
+                        // Update the display with the current accumulated text
+                        typeFormattedText(fullResponse, outputDiv);
+                    }
+                }
+
+                hideLoading();
+            } catch (error) {
+                hideLoading();
+                throw error; // Let the main error handler deal with it
+            }
+        }
+
+        // Function to analyze images (for vision capabilities)
+        async function analyzeImage(imageUrl, question) {
+            try {
+                const response = await puter.ai.chat(question, imageUrl);
+                return response;
+            } catch (error) {
+                console.error('Image analysis error:', error);
+                throw error;
+            }
+        }
+
+        // Event listeners
+        promptInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !submitBtn.disabled) {
+                submitBtn.click();
+            }
+        });
+
+        promptInput.addEventListener('input', () => {
+            if (promptInput.value.trim()) {
+                submitBtn.style.opacity = '1';
+                submitBtn.style.transform = 'scale(1.02)';
+            } else {
+                submitBtn.style.opacity = '0.8';
+                submitBtn.style.transform = 'scale(1)';
+            }
+        });
+
+        modelDropdown.addEventListener('change', updateOutputTitle);
+
+        // Initialize
+        updateOutputTitle();
+        window.setPrompt = setPrompt;
+        window.copyCode = copyCode;
+
+        // Resource Panel Toggle Function
+        function toggleResourcePanel() {
+            const panel = document.getElementById('resourcePanel');
+            panel.classList.toggle('open');
+        }
+
+        // Make toggle function globally accessible
+        window.toggleResourcePanel = toggleResourcePanel;
+    </script>
+</body>
+
+</html>
