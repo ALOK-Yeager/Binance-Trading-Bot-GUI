@@ -9,6 +9,13 @@
 This is a functional trading bot for the Binance Futures Testnet, complete with a user-friendly graphical interface (GUI). The application allows users to monitor cryptocurrency prices in real-time, place `MARKET` and `LIMIT` orders, and view their order history.
 
 The project emphasizes a clean architecture, robust error handling, and a polished user experience.
+## Live Demo
+
+Access the live trading bot demo:
+- Web Dashboard: http://57.159.25.65:8080
+- API Endpoint: http://57.159.25.65:8080/api/status
+
+Note: This demo runs on Azure VM with Binance Testnet API.
 
 ## Features
 
