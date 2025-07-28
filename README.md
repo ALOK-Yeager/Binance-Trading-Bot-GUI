@@ -1,6 +1,14 @@
-# Binance Trading Bot
+# Binance Futures Trading Bot - Hiring Assessment
 
-A Python-based trading bot for Binance cryptocurrency exchange with both desktop GUI and web interfaces.
+**Note:** This project was developed as a technical assessment for a hiring process, with a completion timeframe of approximately 24-48 hours.
+
+---
+
+## Overview
+
+This is a functional trading bot for the Binance Futures Testnet, complete with a user-friendly graphical interface (GUI). The application allows users to monitor cryptocurrency prices in real-time, place `MARKET` and `LIMIT` orders, and view their order history.
+
+The project emphasizes a clean architecture, robust error handling, and a polished user experience.
 
 ## Features
 
