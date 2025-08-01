@@ -122,7 +122,7 @@ TradingBot_Python/
 
 ## Screenshots
 
-### Desktop UI Interface
+### Web UI Interface
 
 The web interface provides a modern, responsive design accessible from any browser:
 
@@ -150,17 +150,9 @@ The web interface provides a modern, responsive design accessible from any brows
 
 The desktop application provides a feature-rich trading experience:
 
-#### Desktop Dashboard
-![Desktop Dashboard](screenshots/desktop_dashboard.png)
-*The desktop interface offers comprehensive trading tools in a single window with real-time updates and advanced charting.*
+#### Trading Dashboard Overview
+![Trading Dashboard](screenshots/trading_dashboard_overview.png)
+*The unified interface brings together comprehensive trading tools, real-time price alerts, and advanced order types into a single, powerful dashboard. Experience seamless charting, customizable alerts, and sophisticated trading strategies—all in one view.*
 
-#### Price Alerts
-![Price Alerts](screenshots/price_alerts.png)
-*Set and manage price alerts with visual and audio notifications when targets are reached.*
 
-#### Advanced Order Types
-![Advanced Orders](screenshots/advanced_orders.png)
-*Access to advanced order types and trading strategies for sophisticated trading approaches.*
-
-## Directory Structure
 
