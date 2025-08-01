@@ -122,7 +122,7 @@ TradingBot_Python/
 
 ## Screenshots
 
-### Web UI Interface
+### Desktop UI Interface
 
 The web interface provides a modern, responsive design accessible from any browser:
 
