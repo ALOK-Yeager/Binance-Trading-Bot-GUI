@@ -1,4 +1,4 @@
-# Binance Futures Trading Bot - Hiring Assessment
+# Binance Futures Trading Bot 
 
 **Note:** This project was developed as a technical assessment for a hiring process, with a completion timeframe of approximately 24-48 hours.
 
